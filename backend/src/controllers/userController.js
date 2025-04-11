@@ -4,7 +4,7 @@ export const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
     
-    // Check if user already exists
+
     const userExists = await User.findOne({ email });
     
     if (userExists) {
@@ -14,7 +14,7 @@ export const registerUser = async (req, res) => {
       });
     }
     
-    // Validate role
+
     if (role && !['user', 'admin'].includes(role)) {
       return res.status(400).json({ 
         success: false, 
@@ -22,15 +22,14 @@ export const registerUser = async (req, res) => {
       });
     }
     
-    // Create user
+
     const user = await User.create({
       name,
       email,
-      password,
-      role: role || 'user' // Default to 'user' if role not provided
+      password
     });
     
-    // Generate JWT token
+
     const token = user.getSignedJwtToken();
     
     res.status(201).json({
@@ -39,8 +38,7 @@ export const registerUser = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email,
-        role: user.role
+        email: user.email
       }
     });
     
@@ -57,8 +55,7 @@ export const loginUser = async (req, res) => {
   console.log("loginUser");
   try {
     const { email, password } = req.body;
-    
-    // Validate email & password
+   
     if (!email || !password) {
       return res.status(400).json({ 
         success: false, 
@@ -66,7 +63,6 @@ export const loginUser = async (req, res) => {
       });
     }
     
-    // Check if user exists
     const user = await User.findOne({ email }).select('+password');
     
     if (!user) {
@@ -76,7 +72,7 @@ export const loginUser = async (req, res) => {
       });
     }
     
-    // Check if password matches
+    
     const isMatch = await user.matchPassword(password);
     
     if (!isMatch) {
@@ -85,8 +81,7 @@ export const loginUser = async (req, res) => {
         message: 'Invalid credentials' 
       });
     }
-    
-    // Generate JWT token
+   
     const token = user.getSignedJwtToken();
     
     res.status(200).json({
